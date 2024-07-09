@@ -1,177 +1,85 @@
-# PIXIE: Collaborative Regression of Expressive Bodies
+# 3D body reconstruction and measurement from the reconstructed 3D body model.
 
-<!-- [![report](https://img.shields.io/badge/arxiv-report-red)]() -->
-
-[[Project Page](https://pixie.is.tue.mpg.de/)] 
-<!-- [[Supp. Mat.]()] -->
-
-
-<p align="center"> 
-<img src="https://pixie.is.tue.mpg.de/media/upload/teaser_v2_option1_overlay_thinner.png">
-</p>
 <p align="center"><p align="center">
 
-This is the official Pytorch implementation of PIXIE. 
+This is the official Pytorch implementation of 3D body reconstruction and measurement. 
 
-PIXIE reconstructs an expressive body with detailed face shape and hand articulation from a single image.
-PIXIE does this by regressing the body, face and hands directly from image pixels using a neural network that includes a novel moderator, which attends to add weights information about the different body parts.
-Unlike prior work, PIXIE estimates bodies with a gender-appropriate shape but does so in a *gender neutral* shape space to accommodate non-binary shapes. 
-Please refer to the [Paper](https://ps.is.mpg.de/uploads_file/attachment/attachment/667/PIXIE_3DV_CR.pdf) for more details.
-
-The main features of PIXIE are:
-
-* **Expressive body estimation:** Given a single image, PIXIE reconstructs the 3D body shape and pose, hand articulation and facial expression as SMPL-X parameters 
-* **Facial details:** PIXIE extracts detailed face shape, including wrinkles, using [DECA](https://github.com/YadiraF/DECA)
-* **Facial texture:** PIXIE also returns a estimate of the albedo of the subject
-* **Animation:** The estimated body can be re-posed and animated
-* **Robust:** Tested on full-body images in unconstrained conditions. The moderation strategy 
-prevents unnatural poses. Overall, our method is robust to: various poses, illumination conditions and occlusions
-* **Accurate:** state-of-the-art expressive body reconstruction
-* **Fast:** this is a direct regression method (pixels in, SMPL-X out)
-<!-- 
-## Table of Contents
-  * [Getting started](#getting-started)
-    * [Requirements](#requirements)
-    * [Pre-trained model and data](#pre-trained-model-and-data)
-  * [Demo](#demo)
-    * [Expressive 3D body reconstruction](#expressive-3d-body-reconstruction)
-    * [3D face reconstruction](#3d-face-reconstruction)
-    * [3D hand reconstruction](#3d-hand-reconstruction)
-    * [Animation](#animation)
-  * [Citation](#citation)
-  * [License](#license)
-  * [Acknowledgments](#acknowledgments)
-  * [Contact](#contact) -->
+This repo reconstructs an expressive body with detailed face shape and hand articulation from a single image.
+This repo does this by regressing the body, face and hands directly from image pixels using a neural network that includes a novel moderator, which attends to add weights information about the different body parts. After that it caculates measurements of the body part based on 3D SMPL/SMPLX body model 
 
 ## Getting started
-Please follow the [installation instructions](Doc/docs/getting_started.md) to
 install all necessary packages and download the data.
 
-## Demo
-#### Expressive 3D body reconstruction
-```bash
-python demos/demo_fit_body.py --saveObj True 
-``` 
-This return the estimated 3D body geometry with texture, in the form of an
-obj file, and render it from multiple viewpoints. 
-If you set the optional `--deca_path` argument then the result will also contain facial details from [DECA](https://github.com/YadiraF/DECA),
-provided that the face moderator is confident enough.
-Please run `python demos/demo_fit_body.py --help` for a more detailed
-description of the various available options. 
+conda create -n 3d_body python=3.8
+conda activate 3d_body
+pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
+pip install numpy>=1.23.0 scipy>=1.4.1 chumpy>=0.69 scikit-image>=0.15 opencv-python>=4.1.1 scikit-image>=0.15 PyYAML==5.1.1 face-alignment kornia yacs ninja matplotlib trimesh
+pip install "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 
-<!-- <p align="center">    -->
-<!-- <img src="TestSamples/body/results/4_vis.gif"> -->
-<!-- </p>     -->
-<!-- <p align="center">    -->
-<!-- <img src="TestSamples/body/results/mtc_09_vis.gif"> -->
-<!-- </p>   -->
-<p align="center">   
-<img src="Doc/images/GettyImages-545880635_vis.gif">
-<!-- <img src="https://www.dropbox.com/s/zv9ciirh9qw8794/GettyImages-545880635_vis.gif?raw=1"> -->
-</p>  
-<p align="center">   
-<img src="Doc/images/photo-of-woman-holding-mobile-phone-3762372_vis.gif">
-<!-- <img src="https://www.dropbox.com/s/7m5aosn2vwxc48e/photo-of-woman-holding-mobile-phone-3762372_vis.gif?raw=1"> -->
-</p>  
-<p align="center">   
-<img src="Doc/images/pexels-luis-miguel-p-bonilla-3551487_vis.gif">
-<!-- <img src="https://www.dropbox.com/s/4ci3erddzbuhvzu/pexels-luis-miguel-p-bonilla-3551487_vis.gif?raw=1"> -->
-</p> 
-<p align="center">   
-<img src="Doc/images/pexels-nathan-cowley-1300520_vis.gif">
-<!-- <img src="https://www.dropbox.com/s/lv520ps864e60cc/pexels-nathan-cowley-1300520_vis.gif?raw=1"> -->
-</p>  
-<!-- <p align="center">   
-<img src="TestSamples/body/results/woman-in-white-dress-3830468_vis.gif", height="220">
-</p>    -->
-<!-- You can also generate an obj file (which can be opened with Meshlab) that includes facial textures. -->
-<p align="center">input body image, estimated 3D body, with facial details, with texture, different views<p align="center">
+pip install "git+https://github.com/MPI-IS/mesh.git"
+pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116
+pip install numpy==1.23.0 trimesh==3.15.1 smplx==0.1.26 scipy==1.5.4 scikit-learn==1.0.2 plotly==5.10.0 pandas==1.3.5 tqdm==4.65.0 panel==1.2.0 open3d==0.17.0 chumpy==0.70 loguru==0.7.0 omegaconf==2.3.0
 
+## Running
 
-#### 3D face reconstruction
-```bash
-python demos/demo_fit_face.py --saveObj True --showBody True
-```   
-Note that, given only a face image, our method still regresses the full SMPL-X parameters, producing a body mesh (as shown in the rightmost image). Futher, note how different face shapes produce different body shapes.  The face tells us a lot about the body.
+You can put front image captured by phone or camera into 3d-body/inputs folder.
+After that you can run following python script.
 
-<p align="center">   
-<img src="Doc/images/face.gif">
-</p>  
-<p align="center">input face image, estimated face, with facial details, with texture, whole body in T-pose<p align="center">
+python start.py --height 178
 
-#### 3D hand reconstruction
-```bash
-python demos/demo_fit_hand.py --saveObj True
-```   
-We do not provide support for hand detection, please make sure that to pass
-hand-only images and flip horizontally all left hands. 
+You have to enter height.
+After running, you will get the 3D body model in output folder and body measurement data.
 
-<p align="center">   
-<img src="Doc/images/hand.png">
-</p>  
-<p align="center">input hand image, estimated hand, with texture(fixed texture).<p align="center">
+Then, the measurements dictionary can be obtained with `measurer.measurements` and the labeled measurements can be obtained with `measurer.labeled_measurements`. The list of the predefined measurements along with its standard literature labels are:
 
-#### Animation
-```bash
-python demos/demo_animate_body.py 
-``` 
-Bodies estimated by PIXIE are easily animated.  For example, we can estimate the body from one image and animate with the poses regressed from a different image sequence.  
- 
-The visualization contains the input image, the predicted expressive 3D body, the animation result, the reference video and its corresponding reconstruction. For the latter, the color of the hands and head represents the confidence of the corresponding moderators. A lighter color means that PIXIE trusts more the information of the body image rather than the parts, which can happen when a person is facing away from the camera for example.  
-
-<p align="center">   
-<img src="Doc/images/animation.gif">
-</p>  
-<!-- <p align="center">   
-<img src="Doc/images/animation_yao.gif">
-</p>   -->
-<!-- <p align="center">input image, predicted expressive 3D body, the animation result, the reference video and -->
-<!-- its corresponding reconstruction. <p align="center"> -->
-
-<!-- ## Qualitative Comparison to other methods -->
-
-## Notes
-
-You can find more details on our method, as well as a discussion of the
-limitations of PIXIE [here](Doc/docs/notes.md).
-
-<!-- ## Todo
-- [ ] online demo (that given a single image, view the estimated smplx mesh and download it as obj file)
-- [ ] training code  -->
-
-## Citation
-If you find our work useful to your research, please consider citing:
 ```
-@inproceedings{PIXIE:2021,
-      title={Collaborative Regression of Expressive Bodies using Moderation}, 
-      author={Yao Feng and Vasileios Choutas and Timo Bolkart and Dimitrios Tzionas and Michael J. Black},
-      booktitle={International Conference on 3D Vision (3DV)},
-      year={2021}
-}
+STANDARD_MEASUREMENT = {
+    'A': 'head circumference',
+    'B': 'neck circumference',
+    'C': 'shoulder to crotch height',
+    'D': 'chest circumference',
+    'E': 'waist circumference',
+    'F': 'hip circumference',
+    'G': 'wrist right circumference',
+    'H': 'bicep right circumference',
+    'I': 'forearm right circumference',
+    'J': 'arm right length',
+    'K': 'inside leg height',
+    'L': 'thigh left circumference',
+    'M': 'calf left circumference',
+    'N': 'ankle left circumference',
+    'O': 'shoulder breadth',
+    'P': 'height'
+    }
 ```
 
-## License
-This code and model are available for non-commercial scientific research purposes as defined in the [LICENSE](https://github.com/YadiraF/PIXIE/blob/master/LICENSE) file.
-By downloading and using the code and model you agree to the terms in the [LICENSE](https://github.com/YadiraF/PIXIE/blob/master/LICENSE). 
+All the measurements are expressed in cm.
 
-## Acknowledgments
-For functions or scripts that are based on external sources, we acknowledge the origin individually in each file.  
-Here are some great resources we benefit from:  
-- [ExPose](https://github.com/vchoutas/expose)  
-- [SMPL-X](https://github.com/vchoutas/smplx) for the SMPL-X model  
-- [Pytorch3D](https://pytorch3d.org/), [neural_renderer](https://github.com/daniilidis-group/neural_renderer), [SoftRas](https://github.com/ShichenLiu/SoftRas) for rendering  
-- [kornia](https://github.com/kornia/kornia) for cropping
-- [faster-rcnns](https://pytorch.org/docs/stable/torchvision/models.html#faster-r-cnn) for person detection
-- [face-alignment](https://github.com/1adrianb/face-alignment) for face cropping   
+## 📝 Notes
 
-We would also like to thank the authors of other public body regression methods, which allow us to easily perform quantitative and qualitative comparisons:  
-[HMR](https://github.com/akanazawa/hmr), [SPIN](https://github.com/nkolot/SPIN), [frankmocap](https://github.com/facebookresearch/frankmocap)
+### Measurement definitions
+There are two types of measurements: lenghts and circumferences.
+1. Lengths are defined as distances between landmark points defined on the body model
+2. Circumferences are defiend as plane cuts of the body model
 
-Last but not least, we thank Victoria Fernández Abrevaya, Yinghao Huang and Radek Danecek for their
-helpful comments and proof reading, and Yuliang Xiu for his help in capturing
-demo sequences. This research was partially supported by the Max Planck ETH Center for Learning Systems.
-Some of the images used in the qualitative examples come from [pexels.com](https://www.pexels.com).
+To define a new measurement:
+1. Open `measurement_definitions.py`
+1. add the new measurement to the `MEASUREMENT_TYPES` dict and set its type:
+   `LENGTH` or `CIRCUMFERENCE`
+2. depending on the measurement type, define the measurement in the `LENGTHS` or 
+   `CIRCUMFERENCES` dict of the appropriate body model (`SMPLMeasurementDefinitions` or `SMPLXMeasurementDefinitions`)
+   - `LENGTHS` are defined using 2 landmarks - the measurement is 
+            found as the distance between the landmarks
+   - `CIRCUMFERENCES` are defined with landmarks and joints - the 
+            measurement is found by cutting the body model with the 
+            plane defined by a point (landmark point) and normal (
+            vector connecting the two joints)
+3. If the measurement is a `CIRCUMFERENCE`, a possible issue that arises is
+   that the plane cutting results in multiple body part slices. To alleviate
+   that, define the body part where the measurement should be located in 
+   `CIRCUMFERENCE_TO_BODYPARTS` dict. This way, only the slice in the corresponding body part is
+   used for finding the measurement. The body parts are defined by the 
+   face segmentation located in `data/smpl_body_parts_2_faces.json` or `data/smplx_body_parts_2_faces.json`.
 
-## Contact
-For questions, please contact [pixie@tue.mpg.de](mailto:pixie@tue.mpg.de).   
-For commercial licensing (and all related questions for business applications), please contact [ps-licensing@tue.mpg.de](mailto:ps-licensing@tue.mpg.de).
+<br>
+
